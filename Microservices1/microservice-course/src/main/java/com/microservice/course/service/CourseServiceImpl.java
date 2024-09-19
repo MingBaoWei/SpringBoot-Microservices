@@ -1,15 +1,22 @@
 package com.microservice.course.service;
 
+import com.microservice.course.client.StudentClient;
+import com.microservice.course.dto.StudentDTO;
 import com.microservice.course.entities.Course;
+import com.microservice.course.http.response.StudentByCourseResponse;
 import com.microservice.course.persistance.CourseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class CourseServiceImpl implements ICourseService{
 
     @Autowired
     private CourseRepository courseRepository;
+    @Autowired
+    private StudentClient studentClient;
 
     @Override
     public List<Course> findAll() {
@@ -25,4 +32,16 @@ public class CourseServiceImpl implements ICourseService{
     public void save(Course course) {
         courseRepository.save(course);
     }
+
+    @Override
+    public StudentByCourseResponse findStudentsByIdCourse(Long idCourse) {
+        Course course = courseRepository.findById(idCourse).orElse(new Course());
+        List<StudentDTO> studentDTOlist = studentClient.findAllStudentByCourse(idCourse);
+        return StudentByCourseResponse.builder()
+                .courseName(course.getName())
+                .teacher(course.getTeacher())
+                .studentDTOList(studentDTOlist)
+                .build();
+    }
+
 }
